@@ -2,17 +2,33 @@
 # NetWave 
 # Dynamic radio server with Racoder
 # Author: Krzysztof "OdzioM" Odziomek
+# version: 20250902_1317
 #
 
+from datetime import datetime
 from flask import Flask, Response, request, stream_with_context
+import logging
 import time
 import docker
 import requests
 import configparser
 
+# init key
 cfg = configparser.ConfigParser()
 client = docker.from_env()
 app = Flask(__name__)
+
+# init logs
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.FileHandler(f'netwave_{datetime.now().strftime('%Y-%m-%d_%H%M%S')}.log'),
+        logging.StreamHandler()
+    ]
+)
+
+logger = logging.getLogger(__name__)
 
 def generate(host, port):
     """
@@ -74,7 +90,7 @@ Version=2
         read_only=True,
         cap_drop=["ALL"],
         name="racoder",
-        ports={"3000/tcp": 3000},
+        ports={f"{racoder_port}/tcp": racoder_port},
         environment={
             "INPUT_STREAM": f"{stream_url}"
         },
@@ -101,9 +117,25 @@ if __name__ == '__main__':
     Sets up:
         - Flask server with specified host and port, running in debug mode.
     """
-    # read flask port
-    cfg.read('config.ini')
-    flask_port = cfg.get('flask', 'port')
-    
-    # start flask
-    app.run(host="0.0.0.0", port=flask_port, debug=True)
+    try:
+        logger.info('NetWave started.')
+        # read flask port
+        cfg.read('config.ini')
+        flask_port = cfg.get('flask', 'port')
+        
+        logger.info('Checking for Racoder docker image...')
+        if len(client.images.list('paulgalow/racoder')) > 0:
+            logger.info('Racoder docker image found.')
+        else:
+            logger.warning('Racoder docker image not found. Trying to download now... please wait...')
+            try:
+                client.images.pull('paulgalow/racoder:latest')
+                logger.info('Racoder docker image downloaded successfully.')
+            except Exception as e:
+                logger.error(f'Download failed. This is catastrophic error. This app will be terminated now.')
+                raise Exception(f'Download failed.\nError:\n{str(e)}')
+
+        # start flask
+        app.run(host="0.0.0.0", port=flask_port, debug=True)
+    except Exception as e:
+        logger.critical(str(e))

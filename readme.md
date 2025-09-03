@@ -54,7 +54,7 @@ pip install -r requirements.txt
 ### Configuration
 - The configuration is read from a file named `config.ini`.
   - `racoder.host`: Hostname or IP address for the Racoder server.
-  - `racoder.port`: Port number on which the Racoder server listens.
+  - `racoder.port`: Port number on which the Racoder server listens (1000-40000 is allowed).
   - `racoder.bitrate`: Bitrate value for MP3 stream output (16-320 kbps is allowed).
   - `flask.port`: Port number for the Flask server to listen on.
 

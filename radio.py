@@ -2,7 +2,7 @@
 # NetWave 
 # Dynamic radio server with Racoder
 # Author: Krzysztof "OdzioM" Odziomek
-# version: 20250902_1317
+# version: 20250903_1120
 #
 
 from datetime import datetime

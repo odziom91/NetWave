@@ -76,7 +76,14 @@ def start_radio():
         # get host and port for racoder from config.ini file
         cfg.read('config.ini')
         racoder_host = cfg.get('racoder', 'host')
-        racoder_port = cfg.get('racoder', 'port')
+
+        # port check
+        try:
+            racoder_port = int(cfg.get('racoder', 'port'))
+            if racoder_port < 1000 or racoder_port > 4000:
+                raise ValueError(f'Incorrect port. Port should be set up between 1000 and 40000. Your bitrate: {racoder_port} kbps. Please check config.ini file.')
+        except:
+            raise ValueError(f'Incorrect type of port value. Please check config.ini file.')
 
         # bitrate check
         try:
@@ -126,10 +133,10 @@ Version=2
             content_type="audio/mpeg"
         )
     except ValueError as e:
-        logging.critical(str(e))
+        logging.error(str(e))
         return Response(str(e))
     except TypeError as e:
-        logging.critical(str(e))
+        logging.error(str(e))
         return Response(str(e))
     except Exception as e:
         raise Exception(f'Critical error: {str(e)}')

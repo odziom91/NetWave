@@ -174,4 +174,5 @@ if __name__ == '__main__':
         app.run(host="0.0.0.0", port=flask_port, debug=True)
     except Exception as e:
         logger.critical(str(e))
+        print('test commit')
         sys.exit()
